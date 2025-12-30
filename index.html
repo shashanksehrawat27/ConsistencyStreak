@@ -4,46 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Momentum Forge 2026</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #070b14; margin: 0; color: white; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        body { font-family: 'Inter', sans-serif; background: #05080f; margin: 0; overflow-x: hidden; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.07); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(500%); } }
-        .animate-shimmer { animation: shimmer 2.5s infinite linear; }
-        .neural-bar { position: relative; overflow: hidden; }
-        .neural-bar::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 98%, black 98%); background-size: 20px 100%; opacity: 0.3; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Neural Bar Animation */
+        @keyframes synshimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
+        .animate-synapse { animation: synshimmer 3s infinite linear; }
+        
+        .neu-shadow { box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.02); }
+        .pixel-grid { background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; }
+        
+        /* Smooth Fade In */
+        .page-enter { animation: pageIn 0.4s ease-out; }
+        @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const Icon = ({ name, size = 24, className = "", fill = "none" }) => {
+        const Icon = ({ name, size = 24, className = "" }) => {
             useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
             return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
         };
 
         function MomentumForge() {
-            const [view, setView] = useState('forge'); 
+            // View State
+            const [activeTab, setActiveTab] = useState('forge'); // 'forge' or 'targets'
+            
+            // Core Data
             const [dailyData, setDailyData] = useState({});
             const [targets, setTargets] = useState({
-                dsa: [
-                    { id: 1, name: 'Arrays & Hashing', done: false }, { id: 2, name: 'Sliding Window', done: false },
-                    { id: 3, name: 'Binary Search', done: false }, { id: 4, name: 'Trees & Graphs', done: false },
-                    { id: 5, name: 'Dynamic Programming', done: false }
-                ],
-                system: [
-                    { id: 1, name: 'Load Balancing', done: false }, { id: 2, name: 'Database Sharding', done: false },
-                    { id: 3, name: 'Microservices', done: false }, { id: 4, name: 'Message Queues', done: false }
-                ]
+                dsa: ['Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Stack', 'Binary Search', 'Trees', 'Graphs', 'DP'],
+                system: ['Load Balancing', 'Caching', 'Sharding', 'Proxies', 'Async Processing', 'API Design'],
+                completed: []
             });
+
+            // Navigation/UI States
             const [currentMonth, setCurrentMonth] = useState(0); 
             const [currentYear, setCurrentYear] = useState(2026);
             const [showModal, setShowModal] = useState(false);
@@ -55,33 +65,72 @@
             const timerRef = useRef(null);
 
             const MILESTONES = [
-                { days: 1, name: 'Spark', emoji: '✨', color: 'from-gray-500 to-gray-700', unlock: 'Forge Initiated' },
-                { days: 7, name: 'Flame', emoji: '🔥', color: 'from-orange-500 to-red-600', unlock: 'Neural Hardwiring' },
-                { days: 30, name: 'Supernova', emoji: '💥', color: 'from-blue-500 to-indigo-600', unlock: 'Elite Status' },
-                { days: 100, name: 'Immortal', emoji: '👑', color: 'from-yellow-400 to-orange-500', unlock: 'FAANG Legend' }
+                { days: 1, name: 'Spark', emoji: '✨', color: 'from-zinc-500 to-zinc-700', unlock: 'Neural Sync Initialized' },
+                { days: 7, name: 'Flame', emoji: '🔥', color: 'from-orange-500 to-red-600', unlock: 'Cognitive Momentum active' },
+                { days: 30, name: 'Supernova', emoji: '💥', color: 'from-blue-500 to-indigo-600', unlock: 'Elite Consistency tier' },
+                { days: 100, name: 'Immortal', emoji: '👑', color: 'from-yellow-400 to-orange-500', unlock: 'Forge Legend status' },
             ];
 
+            // Persistence
             useEffect(() => {
-                const d = localStorage.getItem('mf_data');
-                const t = localStorage.getItem('mf_targets');
-                if (d) setDailyData(JSON.parse(d));
-                if (t) setTargets(JSON.parse(t));
+                const saved = localStorage.getItem('forge_2026_data');
+                const savedTargets = localStorage.getItem('forge_2026_targets');
+                if (saved) setDailyData(JSON.parse(saved));
+                if (savedTargets) setTargets(JSON.parse(savedTargets));
             }, []);
 
-            const saveAll = (d, t) => {
-                if (d) { setDailyData(d); localStorage.setItem('mf_data', JSON.stringify(d)); }
-                if (t) { setTargets(t); localStorage.setItem('mf_targets', JSON.stringify(t)); }
+            const updateData = (newData) => {
+                setDailyData(newData);
+                localStorage.setItem('forge_2026_data', JSON.stringify(newData));
             };
 
+            const toggleTarget = (name) => {
+                const newCompleted = targets.completed.includes(name) 
+                    ? targets.completed.filter(i => i !== name) 
+                    : [...targets.completed, name];
+                const newTargets = {...targets, completed: newCompleted};
+                setTargets(newTargets);
+                localStorage.setItem('forge_2026_targets', JSON.stringify(newTargets));
+            };
+
+            // Excel CSV Export
+            const exportToExcel = () => {
+                let csv = "Date,DSA_Easy,DSA_Medium,DSA_Hard,SystemDesign,Workout\n";
+                Object.entries(dailyData).forEach(([date, val]) => {
+                    csv += `${date},${val.dsa_easy_count || 0},${val.dsa_medium_count || 0},${val.dsa_hard_count || 0},${val.design ? 'YES' : 'NO'},${val.gym ? 'YES' : 'NO'}\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('href', url);
+                a.setAttribute('download', `Forge_Report_2026.csv`);
+                a.click();
+            };
+
+            // Cloud Sync
+            const copySyncCode = () => {
+                const code = btoa(JSON.stringify(dailyData));
+                const input = prompt("SYNC MATRIX: Copy this code to BACKUP, or paste code to RESTORE:", code);
+                if (input && input !== code) {
+                    try { 
+                        setDailyData(JSON.parse(atob(input))); 
+                        alert("Sync Complete. Matrix Updated.");
+                        window.location.reload();
+                    } catch(e) { alert("Invalid Sync Code"); }
+                }
+            };
+
+            // Timer logic
             useEffect(() => {
-                if (timerActive && timeLeft > 0) timerRef.current = setInterval(() => setTimeLeft(p => p - 1), 1000);
+                if (timerActive && timeLeft > 0) timerRef.current = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
                 else clearInterval(timerRef.current);
                 return () => clearInterval(timerRef.current);
             }, [timerActive, timeLeft]);
 
-            const calculateStreak = () => {
+            // Logic: Forgiving Streak
+            const getStreak = () => {
                 const today = new Date();
-                let s = 0;
+                let streak = 0;
                 const check = (d) => {
                     const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                     const v = dailyData[k];
@@ -89,110 +138,143 @@
                 };
                 for (let i = 1; i < 365; i++) {
                     const d = new Date(today); d.setDate(today.getDate() - i);
-                    if (check(d)) s++; else break;
+                    if (check(d)) streak++; else break;
                 }
-                if (check(today)) s++;
-                return s;
+                if (check(today)) streak++;
+                return streak;
             };
 
-            const streak = calculateStreak();
+            const streak = getStreak();
+            const currentMilestone = [...MILESTONES].reverse().find(m => streak >= m.days) || MILESTONES[0];
+
+            // Analytics
+            const analytics = (() => {
+                const days = Object.values(dailyData);
+                const dsa = days.filter(d => d.dsa_easy || d.dsa_medium || d.dsa_hard).length;
+                const sys = days.filter(d => d.design).length;
+                const act = days.filter(d => d.gym || d.cardio || d.pushup).length;
+                const getRemark = (p) => p > 75 ? {t:"ELITE STATUS", c:"text-green-400"} : p > 30 ? {t:"STABLE OUTPUT", c:"text-blue-400"} : {t:"RECOVERY NEEDED", c:"text-red-500"};
+                return [
+                    { l: 'DSA Protocol', p: Math.min(100, Math.round((dsa/30)*100)), col: 'bg-blue-500', rem: getRemark(Math.round((dsa/30)*100)) },
+                    { l: 'Architectural Growth', p: Math.min(100, Math.round((sys/30)*100)), col: 'bg-purple-500', rem: getRemark(Math.round((sys/30)*100)) },
+                    { l: 'Physical Vitality', p: Math.min(100, Math.round((act/30)*100)), col: 'bg-orange-500', rem: getRemark(Math.round((act/30)*100)) }
+                ];
+            })();
+
             const problems = (() => {
                 let e=0, m=0, h=0;
-                Object.values(dailyData).forEach(d => { e+=d.dsa_easy_count||0; m+=d.dsa_medium_count||0; h+=d.dsa_hard_count||0; });
-                return { easy: e, medium: m, hard: h, total: e+m+h };
+                Object.values(dailyData).forEach(d => { e += d.dsa_easy_count||0; m += d.dsa_medium_count||0; h += d.dsa_hard_count||0; });
+                return { e, m, h, t: e+m+h };
             })();
 
-            const analytics = (() => {
-                const dataArray = Object.values(dailyData);
-                const win = 30;
-                const ds = dataArray.filter(d => d.design).length;
-                const dsa = dataArray.filter(d => d.dsa_easy || d.dsa_medium || d.dsa_hard).length;
-                const act = dataArray.filter(d => d.design || d.dsa_easy || d.gym).length;
-                const getRem = (p) => p >= 80 ? {t: "ELITE CONSISTENCY", c: "text-green-400"} : p >= 40 ? {t: "STABLE GROWTH", c: "text-blue-400"} : {t: "CRITICAL RECOVERY", c: "text-red-500"};
-                return [
-                    { l: 'Active Pipeline', c: act, p: Math.round((act/win)*100), color: 'bg-orange-500' },
-                    { l: 'DSA Protocol', c: dsa, p: Math.round((dsa/win)*100), color: 'bg-blue-500' },
-                    { l: 'System Design', c: ds, p: Math.round((ds/win)*100), color: 'bg-purple-500' }
-                ].map(x => ({...x, rem: getRem(x.p)}));
-            })();
-
-            const currentMilestone = [...MILESTONES].reverse().find(m => streak >= m.days) || MILESTONES[0];
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
             return (
-                <div className="min-h-screen pb-32 pt-6 px-4 md:px-10">
-                    {/* ZEN OVERLAY */}
+                <div className="min-h-screen pb-32 pt-6 px-4 md:px-10 pixel-grid">
+                    
+                    {/* ZEN TIMER OVERLAY */}
                     {isStudyMode && (
-                        <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center animate-in">
-                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/20 hover:text-white"><Icon name="x" size={48}/></button>
-                            <h2 className="text-[12rem] font-black tracking-tighter tabular-nums mb-12">{Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}</h2>
-                            <div className="flex gap-8"><button onClick={() => setTimerActive(!timerActive)} className="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center"><Icon name={timerActive?"pause":"play"} size={40}/></button></div>
+                        <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center animate-in">
+                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/20 hover:text-white transition"><Icon name="x" size={48}/></button>
+                            <h2 className="text-[10rem] md:text-[14rem] font-black tracking-tighter tabular-nums mb-12 drop-shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+                                {Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}
+                            </h2>
+                            <button onClick={() => setTimerActive(!timerActive)} className="w-32 h-32 rounded-full bg-white text-black flex items-center justify-center shadow-2xl transform active:scale-90 transition">
+                                <Icon name={timerActive ? "pause" : "play"} size={48} />
+                            </button>
                         </div>
                     )}
 
-                    <div className="max-w-6xl mx-auto">
-                        {/* HEADER HUD */}
-                        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6 text-left">
-                            <div className="flex items-center gap-5 w-full">
-                                <div className={`p-4 rounded-3xl bg-gradient-to-br ${currentMilestone.color} shadow-2xl animate-pulse`}><span className="text-5xl">{currentMilestone.emoji}</span></div>
-                                <div><h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">Aag Lgade</h1><p className="text-white/40 text-xs font-black tracking-[0.3em] uppercase mt-2">{currentMilestone.name} Status Active</p></div>
+                    <div className="max-w-6xl mx-auto page-enter">
+                        
+                        {/* TOP HUD */}
+                        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+                            <div className="flex items-center gap-5 text-left w-full">
+                                <div className={`p-4 rounded-[2rem] bg-gradient-to-br ${currentMilestone.color} shadow-2xl animate-pulse`}>
+                                    <span className="text-5xl">{currentMilestone.emoji}</span>
+                                </div>
+                                <div>
+                                    <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">Aag Lgade</h1>
+                                    <p className="text-white/30 text-xs font-black tracking-[0.4em] uppercase mt-2">{currentMilestone.name} Protocol v2.6</p>
+                                </div>
                             </div>
-                            <div className="flex gap-3">
-                                <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3"><Icon name="flame" className="text-orange-500" size={24}/><span className="text-3xl font-black italic">{streak}</span></div>
-                                <button onClick={() => setShowRewards(true)} className="glass px-6 py-4 rounded-2xl hover:bg-white/10 transition"><Icon name="trophy" size={24}/></button>
+                            <div className="flex gap-3 items-center">
+                                <button onClick={copySyncCode} title="Neural Sync" className="glass p-4 rounded-2xl hover:text-blue-400 transition"><Icon name="refresh-cw" size={20}/></button>
+                                <button onClick={exportToExcel} title="Export Matrix" className="glass p-4 rounded-2xl hover:text-green-400 transition"><Icon name="file-text" size={20}/></button>
+                                <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3 shadow-2xl">
+                                    <Icon name="flame" className="text-orange-500" size={24}/>
+                                    <span className="text-3xl font-black italic tabular-nums">{streak}</span>
+                                </div>
+                                <button onClick={() => setShowRewards(true)} className="glass p-4 rounded-2xl hover:bg-white/10 transition"><Icon name="trophy" size={24}/></button>
                             </div>
                         </div>
 
-                        {view === 'forge' ? (
-                            <div className="space-y-8 animate-in text-left">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* PAGE ROUTER */}
+                        {activeTab === 'forge' ? (
+                            <div className="space-y-8 animate-in">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                                     {/* NEURAL ANALYTICS */}
-                                    <div className="glass rounded-[2.5rem] p-8 relative overflow-hidden">
-                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6 flex items-center gap-2"><Icon name="bar-chart-3" size={14}/> Neural Growth (30D)</h3>
+                                    <div className="glass rounded-[3rem] p-8 neu-shadow relative overflow-hidden">
+                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><Icon name="bar-chart-3" size={14}/> Neural consistency status</h3>
                                         <div className="space-y-6">
                                             {analytics.map((a, i) => (
                                                 <div key={i} className="space-y-2">
-                                                    <div className="flex justify-between text-[9px] font-black uppercase tracking-tighter"><span>{a.l}</span><span className={a.rem.c}>{a.rem.t}</span></div>
-                                                    <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5 neural-bar">
-                                                        <div className={`h-full rounded-full ${a.color} transition-all duration-1000 relative`} style={{ width: `${Math.max(a.p, 5)}%` }}>
-                                                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                                    <div className="flex justify-between items-end">
+                                                        <span className="text-[10px] font-black uppercase text-white/50">{a.l}</span>
+                                                        <span className={`text-[9px] font-black tracking-widest ${a.rem.c}`}>{a.rem.t}</span>
+                                                    </div>
+                                                    <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5 relative">
+                                                        <div className={`h-full rounded-full ${a.col} transition-all duration-1000 relative overflow-hidden`} style={{ width: `${Math.max(a.p, 5)}%` }}>
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-synapse" />
+                                                            <span className="absolute right-2 top-0 text-[8px] font-black text-white">{a.p}%</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                    {/* DSA SUMMARY */}
-                                    <div className="glass rounded-[2.5rem] p-8">
-                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6 flex items-center gap-2"><Icon name="zap" size={14}/> DSA protocol summary</h3>
+
+                                    {/* DSA SUMMARY CARDS */}
+                                    <div className="glass rounded-[3rem] p-8 neu-shadow">
+                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-6 flex items-center gap-2"><Icon name="zap" size={14}/> DSA Protocol Matrix</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            {[{l:'Easy',v:problems.easy,c:'text-green-400',b:'bg-green-500/10'},{l:'Med',v:problems.medium,c:'text-yellow-400',b:'bg-yellow-500/10'},{l:'Hard',v:problems.hard,c:'text-red-400',b:'bg-red-500/10'},{l:'Total',v:problems.total,c:'text-white',b:'bg-blue-500/10'}].map(s=>(
-                                                <div key={s.l} className={`${s.b} p-5 rounded-2xl border border-white/5`}>
-                                                    <div className="text-[10px] font-black uppercase opacity-40 mb-1">{s.l}</div>
-                                                    <div className={`text-4xl font-black italic ${s.c}`}>{s.v}</div>
-                                                </div>
-                                            ))}
+                                            <div className="bg-green-500/10 p-5 rounded-3xl border border-green-500/20">
+                                                <div className="text-[10px] font-black uppercase opacity-40 mb-1">Easy</div>
+                                                <div className="text-5xl font-black italic text-green-400">{problems.e}</div>
+                                            </div>
+                                            <div className="bg-yellow-500/10 p-5 rounded-3xl border border-yellow-500/20">
+                                                <div className="text-[10px] font-black uppercase opacity-40 mb-1">Medium</div>
+                                                <div className="text-5xl font-black italic text-yellow-400">{problems.m}</div>
+                                            </div>
+                                            <div className="bg-red-500/10 p-5 rounded-3xl border border-red-500/20">
+                                                <div className="text-[10px] font-black uppercase opacity-40 mb-1">Hard</div>
+                                                <div className="text-5xl font-black italic text-red-400">{problems.h}</div>
+                                            </div>
+                                            <div className="bg-blue-500/20 p-5 rounded-3xl border border-blue-500/30">
+                                                <div className="text-[10px] font-black uppercase opacity-40 mb-1">Total</div>
+                                                <div className="text-5xl font-black italic text-white">{problems.t}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* CALENDAR CARD */}
-                                <div className="glass rounded-[3rem] p-10">
-                                    <div className="flex items-center justify-between mb-10 uppercase italic font-black text-3xl tracking-tighter">
-                                        <button onClick={()=>{if(currentMonth===0){setCurrentMonth(11);setCurrentYear(currentYear-1)}else setCurrentMonth(currentMonth-1)}} className="glass p-3 rounded-2xl">←</button>
-                                        <span>{monthNames[currentMonth]} {currentYear}</span>
-                                        <button onClick={()=>{if(currentMonth===11){setCurrentMonth(0);setCurrentYear(currentYear+1)}else setCurrentMonth(currentMonth+1)}} className="glass p-3 rounded-2xl">→</button>
+                                <div className="glass rounded-[3.5rem] p-10 neu-shadow">
+                                    <div className="flex items-center justify-between mb-12">
+                                        <button onClick={()=>{if(currentMonth===0){setCurrentMonth(11);setCurrentYear(currentYear-1)}else setCurrentMonth(currentMonth-1)}} className="glass p-4 rounded-2xl hover:bg-white/10 transition">←</button>
+                                        <h2 className="text-4xl font-black uppercase italic tracking-tighter">{monthNames[currentMonth]} {currentYear}</h2>
+                                        <button onClick={()=>{if(currentMonth===11){setCurrentMonth(0);setCurrentYear(currentYear+1)}else setCurrentMonth(currentMonth+1)}} className="glass p-4 rounded-2xl hover:bg-white/10 transition">→</button>
                                     </div>
                                     <div className="grid grid-cols-7 gap-4">
-                                        {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d=><div key={d} className="text-[10px] font-black text-white/20 mb-4 text-center">{d}</div>)}
+                                        {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d=><div key={d} className="text-center text-[10px] font-black text-white/20 tracking-widest">{d}</div>)}
                                         {Array.from({length: new Date(currentYear, currentMonth, 1).getDay()}).map((_,i)=><div key={i}/>)}
                                         {Array.from({length: new Date(currentYear, currentMonth+1, 0).getDate()}).map((_,i)=>{
                                             const d=i+1; const k=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                                             const v=dailyData[k]; const active=v?.design || (v?.dsa_easy||v?.dsa_medium||v?.dsa_hard) || (v?.gym||v?.cardio||v?.pushup);
                                             return (
-                                                <button key={d} onClick={()=>{setModalData({k,d,v:v||{}});setShowModal(true)}} className={`aspect-square rounded-2xl border-2 transition-all transform hover:scale-110 flex items-center justify-center relative ${active?'bg-orange-500/20 border-orange-500 shadow-xl shadow-orange-500/10':'bg-white/[0.02] border-transparent hover:border-white/20'}`}>
-                                                    <span className="absolute top-2 right-3 text-[10px] text-white/20 font-black">{d}</span>
-                                                    {active?<Icon name="flame" size={24} className="text-orange-500" fill="currentColor"/>:<div className="w-1.5 h-1.5 rounded-full bg-white/5"/>}
+                                                <button key={d} onClick={()=>{setModalData({k,d,v:v||{}});setShowModal(true)}} className={`aspect-square rounded-[1.8rem] border-2 transition-all transform hover:scale-110 flex items-center justify-center relative shadow-2xl ${active?'bg-orange-500/20 border-orange-500 shadow-orange-500/10':'bg-white/[0.02] border-transparent hover:border-white/10'}`}>
+                                                    <span className="absolute top-3 right-4 text-[10px] text-white/20 font-black">{d}</span>
+                                                    {active ? <Icon name="flame" size={32} className="text-orange-500" fill="currentColor"/> : <div className="w-1.5 h-1.5 rounded-full bg-white/5" />}
                                                 </button>
                                             );
                                         })}
@@ -200,18 +282,30 @@
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-10 animate-in text-left">
+                            <div className="space-y-8 animate-in text-left">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* DSA TARGETS */}
                                     <div className="glass rounded-[3rem] p-10">
-                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3"><Icon name="zap" className="text-blue-400"/> DSA Blocks</h3>
+                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3 text-blue-400"><Icon name="zap" size={24}/> DSA Patterns</h3>
                                         <div className="space-y-4">
-                                            {targets.dsa.map(t=>(<div key={t.id} onClick={()=>{const nt={...targets,dsa:targets.dsa.map(x=>x.id===t.id?{...x,done:!x.done}:x)};saveAll(null,nt)}} className={`p-6 rounded-2xl border-2 transition cursor-pointer flex items-center gap-4 ${t.done?'bg-blue-500/20 border-blue-500':'bg-white/5 border-transparent'}`}><Icon name={t.done?"check-circle-2":"circle"} className={t.done?"text-blue-400":"opacity-20"}/><span className="font-bold text-lg">{t.name}</span></div>))}
+                                            {targets.dsa.map(t => (
+                                                <div key={t} onClick={()=>toggleTarget(t)} className={`p-6 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between ${targets.completed.includes(t) ? 'bg-blue-600/20 border-blue-500 text-white' : 'bg-white/5 border-transparent text-white/30 hover:border-white/10'}`}>
+                                                    <span className="font-bold tracking-tight">{t}</span>
+                                                    <Icon name={targets.completed.includes(t) ? 'check-circle-2' : 'circle'} size={20}/>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
+                                    {/* SYSTEM DESIGN TARGETS */}
                                     <div className="glass rounded-[3rem] p-10">
-                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3"><Icon name="box" className="text-purple-400"/> Architecture</h3>
+                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3 text-purple-400"><Icon name="box" size={24}/> Architectural Pillars</h3>
                                         <div className="space-y-4">
-                                            {targets.system.map(t=>(<div key={t.id} onClick={()=>{const nt={...targets,system:targets.system.map(x=>x.id===t.id?{...x,done:!x.done}:x)};saveAll(null,nt)}} className={`p-6 rounded-2xl border-2 transition cursor-pointer flex items-center gap-4 ${t.done?'bg-purple-500/20 border-purple-500':'bg-white/5 border-transparent'}`}><Icon name={t.done?"check-circle-2":"circle"} className={t.done?"text-purple-400":"opacity-20"}/><span className="font-bold text-lg">{t.name}</span></div>))}
+                                            {targets.system.map(t => (
+                                                <div key={t} onClick={()=>toggleTarget(t)} className={`p-6 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between ${targets.completed.includes(t) ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-white/5 border-transparent text-white/30 hover:border-white/10'}`}>
+                                                    <span className="font-bold tracking-tight">{t}</span>
+                                                    <Icon name={targets.completed.includes(t) ? 'check-circle-2' : 'circle'} size={20}/>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -219,47 +313,51 @@
                         )}
                     </div>
 
-                    {/* BOTTOM NAV */}
-                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-10 py-5 rounded-full flex items-center gap-12 shadow-2xl z-50">
-                        <button onClick={()=>setView('forge')} className={`flex flex-col items-center gap-1 transition ${view==='forge'?'text-orange-500 scale-110':'text-white/30'}`}><Icon name="calendar" size={24}/><span className="text-[9px] font-black uppercase">Forge</span></button>
-                        <button onClick={()=>setIsStudyMode(true)} className="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center -translate-y-8 shadow-2xl hover:bg-orange-500 hover:text-white transition transform active:scale-90"><Icon name="play" size={28}/></button>
-                        <button onClick={()=>setView('targets')} className={`flex flex-col items-center gap-1 transition ${view==='targets'?'text-blue-500 scale-110':'text-white/30'}`}><Icon name="target" size={24}/><span className="text-[9px] font-black uppercase">Targets</span></button>
+                    {/* STICKY BOTTOM NAV BAR */}
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-10 py-5 rounded-[2.5rem] flex items-center gap-12 shadow-2xl z-[150] border border-white/20">
+                        <button onClick={() => setActiveTab('forge')} className={`flex flex-col items-center gap-1 transition ${activeTab === 'forge' ? 'text-orange-500 scale-110' : 'text-white/20'}`}>
+                            <Icon name="calendar" size={28}/>
+                            <span className="text-[9px] font-black uppercase">Forge</span>
+                        </button>
+                        <button onClick={() => setIsStudyMode(true)} className="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center -translate-y-8 shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:bg-orange-500 hover:text-white transition transform active:scale-90">
+                            <Icon name="play" size={32}/>
+                        </button>
+                        <button onClick={() => setActiveTab('targets')} className={`flex flex-col items-center gap-1 transition ${activeTab === 'targets' ? 'text-blue-500 scale-110' : 'text-white/20'}`}>
+                            <Icon name="target" size={28}/>
+                            <span className="text-[9px] font-black uppercase">Protocol</span>
+                        </button>
                     </div>
 
-                    {/* FORGE MODAL */}
+                    {/* MODALS */}
                     {showModal && (
-                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[110] flex items-center justify-center p-4">
-                            <div className="bg-[#0c121e] border border-white/10 p-10 rounded-[3.5rem] w-full max-w-lg shadow-3xl text-left animate-in">
-                                <div className="flex justify-between mb-10"><h3 className="text-4xl font-black italic tracking-tighter uppercase">Forge Log: {modalData.d}</h3><button onClick={()=>setShowModal(false)} className="opacity-20 hover:opacity-100"><Icon name="x" size={32}/></button></div>
+                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[200] flex items-center justify-center p-4">
+                            <div className="bg-[#0b101a] border border-white/10 p-12 rounded-[4rem] w-full max-w-lg shadow-3xl text-left animate-in">
+                                <div className="flex justify-between mb-10"><h3 className="text-4xl font-black italic tracking-tighter uppercase">Sync Log: {modalData.d}</h3><button onClick={()=>setShowModal(false)}><Icon name="x" size={32}/></button></div>
                                 <div className="space-y-6">
-                                    <button onClick={()=>{const nv=!modalData.v.design; const nd={...dailyData,[modalData.k]:{...modalData.v,design:nv}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`w-full p-6 rounded-[2rem] border-2 flex items-center gap-4 transition ${modalData.v.design?'bg-purple-600/20 border-purple-500 text-white':'bg-white/5 border-transparent text-white/20'}`}><Icon name={modalData.v.design?"check-circle-2":"circle"}/><span className="font-black text-lg italic">System Design</span></button>
-                                    <div className="bg-blue-500/5 p-8 rounded-[2.5rem] border border-blue-500/10"><p className="text-blue-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">DSA Protocol</p>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            {['Easy','Medium','Hard'].map(d=>(<div key={d} className="space-y-1"><label className="text-[9px] font-black uppercase opacity-30 ml-1">{d}</label><input type="number" value={modalData.v[`dsa_${d.toLowerCase()}_count`]||''} onChange={(e)=>{const c=parseInt(e.target.value)||0; const nd={...dailyData,[modalData.k]:{...modalData.v,[`dsa_${d.toLowerCase()}_count`]:c,[`dsa_${d.toLowerCase()}`]:c>0}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className="w-full p-4 bg-black/40 rounded-2xl border border-white/5 text-xl font-black text-blue-500 outline-none focus:border-blue-500 transition text-center"/></div>))}
-                                        </div>
-                                    </div>
-                                    <div className="bg-green-500/5 p-8 rounded-[2.5rem] border border-green-500/10"><p className="text-green-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">Bio-Forge</p>
-                                        <div className="flex flex-wrap gap-2">{['gym','cardio','pushup'].map(a=>(<button key={a} onClick={()=>{const nv=!modalData.v[a]; const nd={...dailyData,[modalData.k]:{...modalData.v,[a]:nv}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase transition ${modalData.v[a]?'bg-green-500 text-white':'bg-black/40 text-white/20'}`}>{a}</button>))}</div>
-                                    </div>
-                                    <button onClick={()=>setShowModal(false)} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase italic shadow-2xl transform active:scale-95 transition">Sync & Close</button>
+                                    <button onClick={()=>{const nv=!modalData.v.design; const nd={...dailyData,[modalData.k]:{...modalData.v,design:nv}};updateData(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`w-full p-8 rounded-[2.5rem] border-2 flex items-center gap-6 transition ${modalData.v.design?'bg-purple-600/20 border-purple-500 text-white shadow-xl':'bg-white/5 border-transparent text-white/20'}`}><Icon name={modalData.v.design?"check-circle-2":"circle"} size={32}/><span className="font-black text-xl italic uppercase">System Design</span></button>
+                                    <div className="bg-blue-500/5 p-8 rounded-[3rem] border border-blue-500/10"><p className="text-blue-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">LeetCode Protocol</p><div className="grid grid-cols-3 gap-4">
+                                        {['Easy','Medium','Hard'].map(d=>(<div key={d} className="space-y-2"><label className="text-[10px] font-black uppercase opacity-30 ml-1">{d}</label><input type="number" value={modalData.v[`dsa_${d.toLowerCase()}_count`]||''} onChange={(e)=>{const c=parseInt(e.target.value)||0; const nd={...dailyData,[modalData.k]:{...modalData.v,[`dsa_${d.toLowerCase()}_count`]:c,[`dsa_${d.toLowerCase()}`]:c>0}};updateData(nd);setModalData({...modalData,v:nd[modalData.k]})}} className="w-full p-5 bg-black/40 rounded-2xl border border-white/5 text-2xl font-black text-blue-500 text-center outline-none focus:border-blue-500"/></div>))}
+                                    </div></div>
+                                    <div className="bg-green-500/5 p-8 rounded-[3rem] border border-green-500/10"><p className="text-green-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">Bio-Forge</p><div className="flex flex-wrap gap-3">{['gym','cardio','pushup','swimming'].map(a=>(<button key={a} onClick={()=>{const nv=!modalData.v[a]; const nd={...dailyData,[modalData.k]:{...modalData.v,[a]:nv}};updateData(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase transition border-2 ${modalData.v[a]?'bg-green-500 border-green-400 text-white shadow-lg':'bg-black/40 border-white/5 text-white/20'}`}>{a}</button>))}</div></div>
+                                    <button onClick={()=>setShowModal(false)} className="w-full py-8 bg-white text-black rounded-[2.5rem] font-black uppercase italic shadow-2xl hover:bg-orange-500 hover:text-white transition transform active:scale-95 text-2xl tracking-tighter">Commit and Close</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* REWARDS MODAL */}
                     {showRewards && (
-                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[120] flex items-center justify-center p-4 animate-in">
-                            <div className="max-w-3xl w-full bg-slate-900 border border-white/10 rounded-[4rem] p-12 max-h-[85vh] overflow-y-auto no-scrollbar shadow-3xl text-left">
-                                <div className="flex justify-between items-center mb-10"><h2 className="text-5xl font-black italic tracking-tighter uppercase text-white"><Icon name="trophy" size={40} className="text-yellow-400 mr-4"/> Roadmap</h2><button onClick={()=>setShowRewards(false)} className="opacity-20 hover:opacity-100"><Icon name="x" size={48}/></button></div>
+                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[200] flex items-center justify-center p-4 animate-in">
+                            <div className="max-w-3xl w-full bg-[#0b101a] border border-white/10 rounded-[4rem] p-12 max-h-[85vh] overflow-y-auto no-scrollbar shadow-3xl text-left">
+                                <div className="flex justify-between items-center mb-10"><h2 className="text-5xl font-black italic tracking-tighter uppercase text-white"><Icon name="trophy" size={48} className="text-yellow-400 mr-4"/> Roadmap</h2><button onClick={()=>setShowRewards(false)} className="opacity-20 hover:opacity-100"><Icon name="x" size={48}/></button></div>
                                 <div className="space-y-6">
                                     {MILESTONES.map((m, i) => (
-                                        <div key={i} className={`p-10 rounded-[3rem] border-2 flex items-center gap-8 transition-all ${streak >= m.days ? `bg-gradient-to-r ${m.color} border-white/20 shadow-2xl scale-[1.02]` : 'bg-white/5 border-transparent opacity-30'}`}><span className="text-8xl drop-shadow-lg">{m.emoji}</span><div><div className="font-black text-3xl uppercase italic tracking-tighter">{m.name} ({m.days} Days)</div><div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mt-1">{m.unlock}</div></div></div>
+                                        <div key={i} className={`p-10 rounded-[3rem] border-2 flex items-center gap-10 transition-all ${streak >= m.days ? `bg-gradient-to-r ${m.color} border-white/20 shadow-2xl scale-[1.02]` : 'bg-white/5 border-transparent opacity-30'}`}><span className="text-8xl drop-shadow-2xl">{m.emoji}</span><div><div className="font-black text-4xl uppercase italic tracking-tighter">{m.name} ({m.days} Days)</div><div className="text-xs font-bold opacity-60 uppercase tracking-widest mt-2">{m.unlock}</div></div></div>
                                     ))}
                                 </div>
                             </div>
                         </div>
                     )}
+
                 </div>
             );
         }
