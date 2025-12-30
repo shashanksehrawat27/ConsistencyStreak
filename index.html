@@ -4,57 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Momentum Forge 2026</title>
-    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: #0f172a; 
-            margin: 0; 
-            overflow-x: hidden; 
-        }
-        
-        /* Smooth transitions for the UI */
-        .animate-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        /* Hide scrollbar for modals */
+        body { font-family: 'Inter', sans-serif; background: #070b14; margin: 0; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(500%); } }
+        .animate-shimmer { animation: shimmer 2.5s infinite linear; }
+        .neural-bar { position: relative; overflow: hidden; }
+        .neural-bar::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 98%, black 98%); background-size: 20px 100%; opacity: 0.3; }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Custom Icon Component to bridge lucide-react with the HTML environment
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const iconRef = useRef(null);
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [name]);
+        const Icon = ({ name, size = 24, className = "", fill = "none" }) => {
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
             return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
         };
 
         function MomentumForge() {
+            const [view, setView] = useState('forge'); 
             const [dailyData, setDailyData] = useState({});
+            const [targets, setTargets] = useState({
+                dsa: [
+                    { id: 1, name: 'Arrays & Hashing', done: false }, { id: 2, name: 'Sliding Window', done: false },
+                    { id: 3, name: 'Binary Search', done: false }, { id: 4, name: 'Trees & Graphs', done: false },
+                    { id: 5, name: 'Dynamic Programming', done: false }
+                ],
+                system: [
+                    { id: 1, name: 'Load Balancing', done: false }, { id: 2, name: 'Database Sharding', done: false },
+                    { id: 3, name: 'Microservices', done: false }, { id: 4, name: 'Message Queues', done: false }
+                ]
+            });
             const [currentMonth, setCurrentMonth] = useState(0); 
             const [currentYear, setCurrentYear] = useState(2026);
             const [showModal, setShowModal] = useState(false);
@@ -66,335 +55,206 @@
             const timerRef = useRef(null);
 
             const MILESTONES = [
-                { days: 1, name: 'Spark', emoji: '✨', color: 'from-gray-400 to-gray-500', points: 1, unlock: 'Journey Begins' },
-                { days: 3, name: 'Kindling', emoji: '🌱', color: 'from-green-400 to-green-500', points: 5, unlock: 'Early Adopter' },
-                { days: 7, name: 'Flame', emoji: '🔥', color: 'from-orange-400 to-red-500', points: 15, unlock: 'Week Warrior' },
-                { days: 14, name: 'Inferno', emoji: '⚡', color: 'from-yellow-400 to-orange-500', points: 30, unlock: '2-Week Champion' },
-                { days: 21, name: 'Blaze', emoji: '💫', color: 'from-blue-400 to-cyan-500', points: 50, unlock: 'Habit Master' },
-                { days: 30, name: 'Supernova', emoji: '💥', color: 'from-blue-400 to-blue-600', points: 80, unlock: 'Monthly Master' },
-                { days: 50, name: 'Phoenix', emoji: '🦅', color: 'from-red-400 to-orange-600', points: 150, unlock: 'Rising Legend' },
-                { days: 100, name: 'Immortal', emoji: '👑', color: 'from-yellow-300 to-yellow-600', points: 500, unlock: 'Hall of Fame Entry' },
+                { days: 1, name: 'Spark', emoji: '✨', color: 'from-gray-500 to-gray-700', unlock: 'Forge Initiated' },
+                { days: 7, name: 'Flame', emoji: '🔥', color: 'from-orange-500 to-red-600', unlock: 'Neural Hardwiring' },
+                { days: 30, name: 'Supernova', emoji: '💥', color: 'from-blue-500 to-indigo-600', unlock: 'Elite Status' },
+                { days: 100, name: 'Immortal', emoji: '👑', color: 'from-yellow-400 to-orange-500', unlock: 'FAANG Legend' }
             ];
 
             useEffect(() => {
-                if (timerActive && timeLeft > 0) {
-                    timerRef.current = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-                } else {
-                    clearInterval(timerRef.current);
-                }
-                return () => clearInterval(timerRef.current);
-            }, [timerActive, timeLeft]);
+                const d = localStorage.getItem('mf_data');
+                const t = localStorage.getItem('mf_targets');
+                if (d) setDailyData(JSON.parse(d));
+                if (t) setTargets(JSON.parse(t));
+            }, []);
 
-            const formatTime = (seconds) => {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            const saveAll = (d, t) => {
+                if (d) { setDailyData(d); localStorage.setItem('mf_data', JSON.stringify(d)); }
+                if (t) { setTargets(t); localStorage.setItem('mf_targets', JSON.stringify(t)); }
             };
 
             useEffect(() => {
-                const saved = localStorage.getItem('momentum_forge_save');
-                if (saved) setDailyData(JSON.parse(saved));
-            }, []);
+                if (timerActive && timeLeft > 0) timerRef.current = setInterval(() => setTimeLeft(p => p - 1), 1000);
+                else clearInterval(timerRef.current);
+                return () => clearInterval(timerRef.current);
+            }, [timerActive, timeLeft]);
 
-            const saveData = (newData) => {
-                setDailyData(newData);
-                localStorage.setItem('momentum_forge_save', JSON.stringify(newData));
-            };
-
-            const getDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-            const openModal = (dateKey, day) => {
-                setModalData({ dateKey, day, data: dailyData[dateKey] || {} });
-                setShowModal(true);
-            };
-
-            const updateDayData = (field, value) => {
-                const newData = { ...dailyData };
-                if (!newData[modalData.dateKey]) newData[modalData.dateKey] = {};
-                newData[modalData.dateKey][field] = value;
-                saveData(newData);
-                setModalData(prev => ({ ...prev, data: newData[modalData.dateKey] }));
-            };
-
-            const updateProblemCount = (difficulty, value) => {
-                const countField = `dsa_${difficulty.toLowerCase()}_count`;
-                const boolField = `dsa_${difficulty.toLowerCase()}`;
-                const count = Math.max(0, parseInt(value) || 0);
-                const newData = { ...dailyData };
-                if (!newData[modalData.dateKey]) newData[modalData.dateKey] = {};
-                newData[modalData.dateKey][countField] = count;
-                newData[modalData.dateKey][boolField] = count > 0;
-                saveData(newData);
-                setModalData(prev => ({ ...prev, data: newData[modalData.dateKey] }));
-            };
-
-            const calculateStreaks = () => {
+            const calculateStreak = () => {
                 const today = new Date();
-                let streakCount = 0;
-                const checkActive = (dayData) => {
-                    return dayData?.design || 
-                           (dayData?.dsa_easy || dayData?.dsa_medium || dayData?.dsa_hard) || 
-                           (dayData?.cardio || dayData?.pushup || dayData?.gym || dayData?.swimming || dayData?.badminton);
+                let s = 0;
+                const check = (d) => {
+                    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    const v = dailyData[k];
+                    return v?.design || (v?.dsa_easy || v?.dsa_medium || v?.dsa_hard) || (v?.gym || v?.cardio || v?.pushup);
                 };
                 for (let i = 1; i < 365; i++) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() - i);
-                    const key = getDateKey(d);
-                    if (checkActive(dailyData[key])) {
-                        streakCount++;
-                    } else {
-                        break;
-                    }
+                    const d = new Date(today); d.setDate(today.getDate() - i);
+                    if (check(d)) s++; else break;
                 }
-                if (checkActive(dailyData[getDateKey(today)])) {
-                    streakCount++;
-                }
-                return streakCount;
+                if (check(today)) s++;
+                return s;
             };
 
-            const streak = calculateStreaks();
-
-            const graphStats = (() => {
-                const dataArray = Object.values(dailyData);
-                const designDays = dataArray.filter(d => d.design).length;
-                const dsaDays = dataArray.filter(d => d.dsa_easy || d.dsa_medium || d.dsa_hard).length;
-                const activeDays = dataArray.filter(d => d.design || d.dsa_easy || d.dsa_medium || d.dsa_hard || d.gym || d.cardio || d.pushup).length;
-                return [
-                    { label: 'Active Days', count: activeDays, color: 'rgb(249, 115, 22)', icon: 'flame' },
-                    { label: 'DSA Practice', count: dsaDays, color: 'rgb(59, 130, 246)', icon: 'zap' },
-                    { label: 'System Design', count: designDays, color: 'rgb(168, 85, 247)', icon: 'star' },
-                ];
+            const streak = calculateStreak();
+            const problems = (() => {
+                let e=0, m=0, h=0;
+                Object.values(dailyData).forEach(d => { e+=d.dsa_easy_count||0; m+=d.dsa_medium_count||0; h+=d.dsa_hard_count||0; });
+                return { easy: e, medium: m, hard: h, total: e+m+h };
             })();
 
-            const problems = (() => {
-                let easy = 0, medium = 0, hard = 0;
-                Object.values(dailyData).forEach(day => {
-                    easy += day.dsa_easy_count || 0;
-                    medium += day.dsa_medium_count || 0;
-                    hard += day.dsa_hard_count || 0;
-                });
-                return { easy, medium, hard, total: easy + medium + hard };
+            const analytics = (() => {
+                const dataArray = Object.values(dailyData);
+                const win = 30;
+                const ds = dataArray.filter(d => d.design).length;
+                const dsa = dataArray.filter(d => d.dsa_easy || d.dsa_medium || d.dsa_hard).length;
+                const act = dataArray.filter(d => d.design || d.dsa_easy || d.gym).length;
+                const getRem = (p) => p >= 80 ? {t: "ELITE CONSISTENCY", c: "text-green-400"} : p >= 40 ? {t: "STABLE GROWTH", c: "text-blue-400"} : {t: "CRITICAL RECOVERY", c: "text-red-500"};
+                return [
+                    { l: 'Active Pipeline', c: act, p: Math.round((act/win)*100), color: 'bg-orange-500' },
+                    { l: 'DSA Protocol', c: dsa, p: Math.round((dsa/win)*100), color: 'bg-blue-500' },
+                    { l: 'System Design', c: ds, p: Math.round((ds/win)*100), color: 'bg-purple-500' }
+                ].map(x => ({...x, rem: getRem(x.p)}));
             })();
 
             const currentMilestone = [...MILESTONES].reverse().find(m => streak >= m.days) || MILESTONES[0];
-            const nextMilestone = MILESTONES.find(m => streak < m.days);
-            const totalPoints = MILESTONES.reduce((acc, m) => streak >= m.days ? acc + m.points : acc, 0);
-
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 p-6 text-white text-left selection:bg-orange-500">
-                    
+                <div className="min-h-screen pb-32 pt-6 px-4 md:px-10">
+                    {/* ZEN OVERLAY */}
                     {isStudyMode && (
-                        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center animate-in">
-                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/40 hover:text-white transition"><Icon name="x" size={40}/></button>
-                            <div className="text-center">
-                                <div className="text-xs font-black text-orange-500 tracking-[0.5em] mb-8 uppercase animate-pulse">Deep Work Protocol</div>
-                                <h2 className="text-[8rem] md:text-[12rem] font-black tracking-tighter tabular-nums mb-12">{formatTime(timeLeft)}</h2>
-                                <div className="flex gap-8 justify-center">
-                                    <button onClick={() => setTimerActive(!timerActive)} className={`w-24 h-24 rounded-full flex items-center justify-center transition ${timerActive ? 'bg-white/10 text-white' : 'bg-white text-black'}`}>
-                                        <Icon name={timerActive ? "pause" : "play"} size={40} className={timerActive ? "" : "ml-2"} />
-                                    </button>
-                                    <button onClick={() => {setTimerActive(false); setTimeLeft(25*60)}} className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition">
-                                        <Icon name="rotate-ccw" size={32} />
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center animate-in">
+                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/20 hover:text-white"><Icon name="x" size={48}/></button>
+                            <h2 className="text-[12rem] font-black tracking-tighter tabular-nums mb-12">{Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}</h2>
+                            <div className="flex gap-8"><button onClick={() => setTimerActive(!timerActive)} className="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center"><Icon name={timerActive?"pause":"play"} size={40}/></button></div>
                         </div>
                     )}
 
-                    <div className="max-w-7xl mx-auto">
-                        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
-
-                            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
-                                <div className="flex items-center gap-4">
-                                    <div className={`bg-gradient-to-br ${currentMilestone.color} p-4 rounded-2xl shadow-lg animate-pulse`}>
-                                        <span className="text-5xl">{currentMilestone.emoji}</span>
-                                    </div>
-                                    <div>
-                                        <h1 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg tracking-tight uppercase italic">Momentum Forge</h1>
-                                        <p className="text-purple-200 text-sm font-medium">Any win counts. Maintain the chain.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3 items-center">
-                                    <div className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg backdrop-blur-md">
-                                        <Icon name="flame" size={20} className="text-orange-500" />
-                                        <span className="font-black text-xl italic tabular-nums">{streak}</span>
-                                    </div>
-                                    <button onClick={() => setIsStudyMode(true)} className="bg-white text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-orange-500 hover:text-white transition shadow-lg uppercase italic">
-                                        <Icon name="monitor" size={20} /> Zen
-                                    </button>
-                                    <button onClick={() => setShowRewards(true)} className="bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg uppercase italic">
-                                        <Icon name="trophy" size={20} /> Rewards
-                                    </button>
-                                </div>
+                    <div className="max-w-6xl mx-auto">
+                        {/* HEADER HUD */}
+                        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6 text-left">
+                            <div className="flex items-center gap-5 w-full">
+                                <div className={`p-4 rounded-3xl bg-gradient-to-br ${currentMilestone.color} shadow-2xl animate-pulse`}><span className="text-5xl">{currentMilestone.emoji}</span></div>
+                                <div><h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">Aag Lgade</h1><p className="text-white/40 text-xs font-black tracking-[0.3em] uppercase mt-2">{currentMilestone.name} Status Active</p></div>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div className={`bg-gradient-to-br ${currentMilestone.color} rounded-2xl p-6 border-2 border-white/40 shadow-xl relative overflow-hidden`}>
-                                    <div className="relative z-10">
-                                        <div className="text-white/90 text-sm mb-1 flex items-center gap-2 uppercase font-black tracking-widest"><Icon name="crown" size={16}/> Rank Status</div>
-                                        <div className="text-5xl font-black text-white mb-2 tracking-tighter uppercase italic">{currentMilestone.name}</div>
-                                        <div className="text-white/90 text-sm font-semibold italic">{currentMilestone.unlock}</div>
-                                    </div>
-                                    <div className="text-8xl opacity-20 absolute -right-4 top-0">{currentMilestone.emoji}</div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 flex justify-between items-center">
-                                        <div>
-                                            <div className="flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-xs"><Icon name="flame" className="text-orange-500" size={16}/> Perfect Streak</div>
-                                            <div className="text-purple-200 text-sm italic">Current daily chain</div>
-                                        </div>
-                                        <div className="text-4xl font-black text-white italic tabular-nums">{streak}</div>
-                                    </div>
-                                    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 flex justify-between items-center">
-                                        <div>
-                                            <div className="flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-xs"><Icon name="star" className="text-yellow-400" size={16}/> Power Points</div>
-                                            <div className="text-blue-200 text-sm italic">Total XP earned</div>
-                                        </div>
-                                        <div className="text-4xl font-black text-white italic tabular-nums">{totalPoints}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-black/20 rounded-3xl p-8 mb-6 border border-white/10 relative overflow-hidden">
-                                <h3 className="text-white/40 font-black uppercase text-[11px] tracking-[0.3em] mb-8 flex items-center gap-3">
-                                    <Icon name="bar-chart-3" size={14} /> Neural Analytics (Volume)
-                                </h3>
-                                <div className="space-y-8">
-                                    {graphStats.map((stat, idx) => {
-                                        const max = Math.max(...graphStats.map(s => s.count)) || 1;
-                                        const width = (stat.count / max) * 100;
-                                        return (
-                                            <div key={idx} className="relative group">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <div className="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-white/70">
-                                                        <Icon name={stat.icon} size={12} /> {stat.label}
-                                                    </div>
-                                                    <div className="text-xl font-black italic" style={{ color: stat.color }}>{stat.count}</div>
-                                                </div>
-                                                <div className="h-4 w-full bg-white/[0.03] rounded-full border border-white/5 overflow-hidden">
-                                                    <div className="h-full transition-all duration-1000 ease-out" style={{ width: `${width}%`, backgroundColor: stat.color }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {nextMilestone && (
-                                <div className="bg-white/5 rounded-2xl p-6 mb-6 border border-white/10 italic">
-                                    <div className="flex justify-between items-end mb-4">
-                                        <div className="text-xl font-black uppercase tracking-tighter">Road to {nextMilestone.name}</div>
-                                        <div className="text-sm font-bold text-white/40 uppercase tracking-widest tabular-nums">{streak} / {nextMilestone.days} DAYS</div>
-                                    </div>
-                                    <div className="w-full bg-white/10 rounded-full h-4 overflow-hidden p-0.5">
-                                        <div 
-                                            className={`h-full rounded-full bg-gradient-to-r ${nextMilestone.color} transition-all duration-1000`} 
-                                            style={{ width: `${Math.min(100, (streak / nextMilestone.days) * 100)}%` }} 
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="bg-white/5 rounded-2xl p-5 mb-6 border border-white/10">
-                                <h3 className="text-white font-bold mb-3 flex items-center gap-2 text-xs uppercase tracking-widest opacity-50"><Icon name="zap" size={18} className="text-blue-400"/> DSA Summary</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                                    {['Easy', 'Medium', 'Hard', 'Total'].map((level) => (
-                                        <div key={level} className={`${level === 'Total' ? 'bg-blue-500/20' : level === 'Easy' ? 'bg-green-500/20' : level === 'Medium' ? 'bg-yellow-500/20' : 'bg-red-500/20'} p-3 rounded-xl border border-white/10 font-black italic`}>
-                                            <div className="text-[10px] uppercase not-italic opacity-50">{level}</div>
-                                            <div className="text-3xl">{problems[level.toLowerCase()] || problems.total}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between mb-6">
-                                <button onClick={() => {if(currentMonth === 0){setCurrentMonth(11); setCurrentYear(currentYear-1)} else setCurrentMonth(currentMonth-1)}} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition">←</button>
-                                <div className="text-2xl font-black uppercase italic tracking-tighter">{monthNames[currentMonth]} {currentYear}</div>
-                                <button onClick={() => {if(currentMonth === 11){setCurrentMonth(0); setCurrentYear(currentYear+1)} else setCurrentMonth(currentMonth+1)}} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition">→</button>
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-3">
-                                {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => <div key={d} className="text-center text-[10px] font-black text-white/20 p-2 tracking-widest">{d}</div>)}
-                                {Array.from({ length: firstDay }).map((_, i) => <div key={i} />)}
-                                {Array.from({ length: daysInMonth }).map((_, i) => {
-                                    const d = i + 1;
-                                    const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                                    const dayData = dailyData[dateKey];
-                                    const isPerfect = dayData?.design || (dayData?.dsa_easy || dayData?.dsa_medium || dayData?.dsa_hard) || (dayData?.gym || dayData?.cardio || dayData?.pushup);
-                                    return (
-                                        <button key={d} onClick={() => openModal(dateKey, d)} className={`aspect-square rounded-2xl border-2 transition-all hover:scale-110 flex flex-col items-center justify-center relative shadow-lg ${isPerfect ? 'bg-orange-500/20 border-orange-500 shadow-orange-500/10' : 'bg-white/[0.02] border-transparent hover:border-white/20'}`}>
-                                            <span className="absolute top-2 right-2 text-[10px] text-white/20 font-black">{d}</span>
-                                            {isPerfect ? <Icon name="flame" className="text-orange-500" fill="currentColor" size={24} /> : <div className="w-1.5 h-1.5 rounded-full bg-white/5" />}
-                                        </button>
-                                    )
-                                })}
+                            <div className="flex gap-3">
+                                <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3"><Icon name="flame" className="text-orange-500" size={24}/><span className="text-3xl font-black italic">{streak}</span></div>
+                                <button onClick={() => setShowRewards(true)} className="glass px-6 py-4 rounded-2xl hover:bg-white/10 transition"><Icon name="trophy" size={24}/></button>
                             </div>
                         </div>
+
+                        {view === 'forge' ? (
+                            <div className="space-y-8 animate-in text-left">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* NEURAL ANALYTICS */}
+                                    <div className="glass rounded-[2.5rem] p-8 relative overflow-hidden">
+                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6 flex items-center gap-2"><Icon name="bar-chart-3" size={14}/> Neural Growth (30D)</h3>
+                                        <div className="space-y-6">
+                                            {analytics.map((a, i) => (
+                                                <div key={i} className="space-y-2">
+                                                    <div className="flex justify-between text-[9px] font-black uppercase tracking-tighter"><span>{a.l}</span><span className={a.rem.c}>{a.rem.t}</span></div>
+                                                    <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5 neural-bar">
+                                                        <div className={`h-full rounded-full ${a.color} transition-all duration-1000 relative`} style={{ width: `${Math.max(a.p, 5)}%` }}>
+                                                            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {/* DSA SUMMARY */}
+                                    <div className="glass rounded-[2.5rem] p-8">
+                                        <h3 className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6 flex items-center gap-2"><Icon name="zap" size={14}/> DSA protocol summary</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {[{l:'Easy',v:problems.easy,c:'text-green-400',b:'bg-green-500/10'},{l:'Med',v:problems.medium,c:'text-yellow-400',b:'bg-yellow-500/10'},{l:'Hard',v:problems.hard,c:'text-red-400',b:'bg-red-500/10'},{l:'Total',v:problems.total,c:'text-white',b:'bg-blue-500/10'}].map(s=>(
+                                                <div key={s.l} className={`${s.b} p-5 rounded-2xl border border-white/5`}>
+                                                    <div className="text-[10px] font-black uppercase opacity-40 mb-1">{s.l}</div>
+                                                    <div className={`text-4xl font-black italic ${s.c}`}>{s.v}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CALENDAR CARD */}
+                                <div className="glass rounded-[3rem] p-10">
+                                    <div className="flex items-center justify-between mb-10 uppercase italic font-black text-3xl tracking-tighter">
+                                        <button onClick={()=>{if(currentMonth===0){setCurrentMonth(11);setCurrentYear(currentYear-1)}else setCurrentMonth(currentMonth-1)}} className="glass p-3 rounded-2xl">←</button>
+                                        <span>{monthNames[currentMonth]} {currentYear}</span>
+                                        <button onClick={()=>{if(currentMonth===11){setCurrentMonth(0);setCurrentYear(currentYear+1)}else setCurrentMonth(currentMonth+1)}} className="glass p-3 rounded-2xl">→</button>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-4">
+                                        {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d=><div key={d} className="text-[10px] font-black text-white/20 mb-4 text-center">{d}</div>)}
+                                        {Array.from({length: new Date(currentYear, currentMonth, 1).getDay()}).map((_,i)=><div key={i}/>)}
+                                        {Array.from({length: new Date(currentYear, currentMonth+1, 0).getDate()}).map((_,i)=>{
+                                            const d=i+1; const k=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                                            const v=dailyData[k]; const active=v?.design || (v?.dsa_easy||v?.dsa_medium||v?.dsa_hard) || (v?.gym||v?.cardio||v?.pushup);
+                                            return (
+                                                <button key={d} onClick={()=>{setModalData({k,d,v:v||{}});setShowModal(true)}} className={`aspect-square rounded-2xl border-2 transition-all transform hover:scale-110 flex items-center justify-center relative ${active?'bg-orange-500/20 border-orange-500 shadow-xl shadow-orange-500/10':'bg-white/[0.02] border-transparent hover:border-white/20'}`}>
+                                                    <span className="absolute top-2 right-3 text-[10px] text-white/20 font-black">{d}</span>
+                                                    {active?<Icon name="flame" size={24} className="text-orange-500" fill="currentColor"/>:<div className="w-1.5 h-1.5 rounded-full bg-white/5"/>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-10 animate-in text-left">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="glass rounded-[3rem] p-10">
+                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3"><Icon name="zap" className="text-blue-400"/> DSA Blocks</h3>
+                                        <div className="space-y-4">
+                                            {targets.dsa.map(t=>(<div key={t.id} onClick={()=>{const nt={...targets,dsa:targets.dsa.map(x=>x.id===t.id?{...x,done:!x.done}:x)};saveAll(null,nt)}} className={`p-6 rounded-2xl border-2 transition cursor-pointer flex items-center gap-4 ${t.done?'bg-blue-500/20 border-blue-500':'bg-white/5 border-transparent'}`}><Icon name={t.done?"check-circle-2":"circle"} className={t.done?"text-blue-400":"opacity-20"}/><span className="font-bold text-lg">{t.name}</span></div>))}
+                                        </div>
+                                    </div>
+                                    <div className="glass rounded-[3rem] p-10">
+                                        <h3 className="text-2xl font-black italic uppercase mb-8 flex items-center gap-3"><Icon name="box" className="text-purple-400"/> Architecture</h3>
+                                        <div className="space-y-4">
+                                            {targets.system.map(t=>(<div key={t.id} onClick={()=>{const nt={...targets,system:targets.system.map(x=>x.id===t.id?{...x,done:!x.done}:x)};saveAll(null,nt)}} className={`p-6 rounded-2xl border-2 transition cursor-pointer flex items-center gap-4 ${t.done?'bg-purple-500/20 border-purple-500':'bg-white/5 border-transparent'}`}><Icon name={t.done?"check-circle-2":"circle"} className={t.done?"text-purple-400":"opacity-20"}/><span className="font-bold text-lg">{t.name}</span></div>))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
+                    {/* BOTTOM NAV */}
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-10 py-5 rounded-full flex items-center gap-12 shadow-2xl z-50">
+                        <button onClick={()=>setView('forge')} className={`flex flex-col items-center gap-1 transition ${view==='forge'?'text-orange-500 scale-110':'text-white/30'}`}><Icon name="calendar" size={24}/><span className="text-[9px] font-black uppercase">Forge</span></button>
+                        <button onClick={()=>setIsStudyMode(true)} className="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center -translate-y-8 shadow-2xl hover:bg-orange-500 hover:text-white transition transform active:scale-90"><Icon name="play" size={28}/></button>
+                        <button onClick={()=>setView('targets')} className={`flex flex-col items-center gap-1 transition ${view==='targets'?'text-blue-500 scale-110':'text-white/30'}`}><Icon name="target" size={24}/><span className="text-[9px] font-black uppercase">Targets</span></button>
+                    </div>
+
+                    {/* FORGE MODAL */}
                     {showModal && (
-                        <div className="fixed inset-0 bg-black/90 backdrop-blur-3xl flex items-center justify-center z-[110] p-4 animate-in">
-                            <div className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] w-full max-w-lg shadow-3xl">
-                                <div className="flex justify-between items-center mb-8 uppercase italic font-black">
-                                    <h3 className="text-4xl italic tracking-tighter uppercase">Forge Log: {modalData.day}</h3>
-                                    <button onClick={() => setShowModal(false)}><Icon name="x" size={32} className="text-zinc-500 hover:text-white transition"/></button>
-                                </div>
-                                
+                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[110] flex items-center justify-center p-4">
+                            <div className="bg-[#0c121e] border border-white/10 p-10 rounded-[3.5rem] w-full max-w-lg shadow-3xl text-left animate-in">
+                                <div className="flex justify-between mb-10"><h3 className="text-4xl font-black italic tracking-tighter uppercase">Forge Log: {modalData.d}</h3><button onClick={()=>setShowModal(false)} className="opacity-20 hover:opacity-100"><Icon name="x" size={32}/></button></div>
                                 <div className="space-y-6">
-                                    <button onClick={() => updateDayData('design', !modalData.data.design)} className={`w-full p-6 rounded-[2rem] border-2 flex items-center gap-4 transition-all transform active:scale-95 ${modalData.data.design ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-zinc-800 border-transparent text-zinc-500'}`}>
-                                        <Icon name={modalData.data.design ? "check-circle-2" : "circle"} size={28} className={modalData.data.design ? "text-purple-400" : ""}/>
-                                        <span className="font-black text-lg uppercase italic tracking-tight">System Design Practice</span>
-                                    </button>
-
-                                    <div className="bg-blue-500/5 p-6 rounded-[2.5rem] border border-blue-500/20">
-                                        <p className="text-blue-400 text-[10px] font-black uppercase mb-4 tracking-widest flex items-center gap-2"><Icon name="zap" size={14}/> DSA protocol</p>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            {['Easy', 'Medium', 'Hard'].map(diff => (
-                                                <div key={diff}>
-                                                    <label className="text-[10px] text-white/30 block mb-1 uppercase font-black tracking-tighter ml-2 italic">{diff}</label>
-                                                    <input type="number" value={modalData.data[`dsa_${diff.toLowerCase()}_count`] || ''} onChange={(e) => updateProblemCount(diff, e.target.value)} placeholder="0" className="bg-black/40 w-full p-4 rounded-2xl border border-white/5 text-2xl font-black outline-none text-blue-500 placeholder-white/5 text-center focus:border-blue-500 transition" />
-                                                </div>
-                                            ))}
+                                    <button onClick={()=>{const nv=!modalData.v.design; const nd={...dailyData,[modalData.k]:{...modalData.v,design:nv}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`w-full p-6 rounded-[2rem] border-2 flex items-center gap-4 transition ${modalData.v.design?'bg-purple-600/20 border-purple-500 text-white':'bg-white/5 border-transparent text-white/20'}`}><Icon name={modalData.v.design?"check-circle-2":"circle"}/><span className="font-black text-lg italic">System Design</span></button>
+                                    <div className="bg-blue-500/5 p-8 rounded-[2.5rem] border border-blue-500/10"><p className="text-blue-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">DSA Protocol</p>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {['Easy','Medium','Hard'].map(d=>(<div key={d} className="space-y-1"><label className="text-[9px] font-black uppercase opacity-30 ml-1">{d}</label><input type="number" value={modalData.v[`dsa_${d.toLowerCase()}_count`]||''} onChange={(e)=>{const c=parseInt(e.target.value)||0; const nd={...dailyData,[modalData.k]:{...modalData.v,[`dsa_${d.toLowerCase()}_count`]:c,[`dsa_${d.toLowerCase()}`]:c>0}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className="w-full p-4 bg-black/40 rounded-2xl border border-white/5 text-xl font-black text-blue-500 outline-none focus:border-blue-500 transition text-center"/></div>))}
                                         </div>
                                     </div>
-
-                                    <div className="bg-green-500/5 p-6 rounded-[2.5rem] border border-green-500/20">
-                                        <p className="text-green-400 text-[10px] font-black uppercase mb-4 tracking-widest italic flex items-center gap-2"><Icon name="dumbbell" size={14} /> Vital Activity</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['gym', 'cardio', 'pushup', 'swimming', 'badminton'].map(act => (
-                                                <button key={act} onClick={() => updateDayData(act, !modalData.data[act])} className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase transition-all transform active:scale-90 tracking-widest ${modalData.data[act] ? 'bg-green-500 text-white shadow-xl' : 'bg-black/40 text-white/30 border border-white/5'}`}>
-                                                    {act}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    <div className="bg-green-500/5 p-8 rounded-[2.5rem] border border-green-500/10"><p className="text-green-400 text-[10px] font-black uppercase mb-4 tracking-widest italic">Bio-Forge</p>
+                                        <div className="flex flex-wrap gap-2">{['gym','cardio','pushup'].map(a=>(<button key={a} onClick={()=>{const nv=!modalData.v[a]; const nd={...dailyData,[modalData.k]:{...modalData.v,[a]:nv}};saveAll(nd);setModalData({...modalData,v:nd[modalData.k]})}} className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase transition ${modalData.v[a]?'bg-green-500 text-white':'bg-black/40 text-white/20'}`}>{a}</button>))}</div>
                                     </div>
-                                    <button onClick={() => setShowModal(false)} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase italic shadow-2xl hover:bg-orange-500 hover:text-white transition-all transform active:scale-95 text-xl tracking-tighter">Sync & Close</button>
+                                    <button onClick={()=>setShowModal(false)} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase italic shadow-2xl transform active:scale-95 transition">Sync & Close</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
+                    {/* REWARDS MODAL */}
                     {showRewards && (
-                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl flex items-center justify-center z-[120] p-4 text-left">
-                            <div className="max-w-2xl w-full bg-slate-900 border border-white/10 rounded-[4rem] p-12 max-h-[85vh] overflow-y-auto shadow-3xl no-scrollbar">
-                                <div className="flex justify-between items-center mb-10">
-                                    <h2 className="text-4xl font-black italic tracking-tighter uppercase flex items-center gap-3 text-white"><Icon name="trophy" size={36} className="text-yellow-400"/> Roadmap</h2>
-                                    <button onClick={() => setShowRewards(false)} className="p-4 bg-white/5 rounded-full text-zinc-500 hover:text-white transition"><Icon name="x" size={36}/></button>
-                                </div>
+                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl z-[120] flex items-center justify-center p-4 animate-in">
+                            <div className="max-w-3xl w-full bg-slate-900 border border-white/10 rounded-[4rem] p-12 max-h-[85vh] overflow-y-auto no-scrollbar shadow-3xl text-left">
+                                <div className="flex justify-between items-center mb-10"><h2 className="text-5xl font-black italic tracking-tighter uppercase text-white"><Icon name="trophy" size={40} className="text-yellow-400 mr-4"/> Roadmap</h2><button onClick={()=>setShowRewards(false)} className="opacity-20 hover:opacity-100"><Icon name="x" size={48}/></button></div>
                                 <div className="space-y-6">
                                     {MILESTONES.map((m, i) => (
-                                        <div key={i} className={`p-8 rounded-[2.5rem] border-2 flex items-center gap-6 transition-all ${streak >= m.days ? `bg-gradient-to-r ${m.color} border-white/20 shadow-2xl scale-[1.02]` : 'bg-white/5 border-white/5 opacity-40'}`}>
-                                            <span className="text-6xl drop-shadow-lg">{m.emoji}</span>
-                                            <div>
-                                                <div className="font-black text-2xl uppercase italic tracking-tighter">{m.name} ({m.days} Days)</div>
-                                                <div className="text-xs font-bold opacity-70 uppercase tracking-widest mt-1">{m.unlock}</div>
-                                            </div>
-                                        </div>
+                                        <div key={i} className={`p-10 rounded-[3rem] border-2 flex items-center gap-8 transition-all ${streak >= m.days ? `bg-gradient-to-r ${m.color} border-white/20 shadow-2xl scale-[1.02]` : 'bg-white/5 border-transparent opacity-30'}`}><span className="text-8xl drop-shadow-lg">{m.emoji}</span><div><div className="font-black text-3xl uppercase italic tracking-tighter">{m.name} ({m.days} Days)</div><div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mt-1">{m.unlock}</div></div></div>
                                     ))}
                                 </div>
                             </div>
@@ -403,9 +263,7 @@
                 </div>
             );
         }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MomentumForge />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<MomentumForge />);
     </script>
 </body>
 </html>
