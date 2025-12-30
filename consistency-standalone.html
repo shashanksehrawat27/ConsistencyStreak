@@ -3,132 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Consistency - Track your daily habits and build unstoppable momentum">
-    <title>Consistency - Build Your Streak</title>
+    <title>Momentum Forge 2026</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0f172a; margin: 0; overflow-x: hidden; }
+        
+        /* Custom scrollbar for Roadmap */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-in { animation: fadeIn 0.5s ease-out; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 min-h-screen">
-    <div id="app"></div>
+<body>
+    <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
+    <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons as SVG components
-        const Flame = ({size = 24, className = "", fill = "none"}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2">
-                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-            </svg>
-        );
-
-        const Trophy = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                <path d="M4 22h16"/>
-                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-            </svg>
-        );
-
-        const X = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6 6 18M6 6l12 12"/>
-            </svg>
-        );
-
-        const Monitor = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect width="20" height="14" x="2" y="3" rx="2"/>
-                <path d="M8 21h8M12 17v4"/>
-            </svg>
-        );
-
-        const Play = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-        );
-
-        const Pause = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect width="4" height="16" x="6" y="4"/>
-                <rect width="4" height="16" x="14" y="4"/>
-            </svg>
-        );
-
-        const RotateCcw = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-            </svg>
-        );
-
-        const CheckCircle2 = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="m9 12 2 2 4-4"/>
-            </svg>
-        );
-
-        const Circle = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-            </svg>
-        );
-
-        const Zap = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-        );
-
-        const Star = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-        );
-
-        const Crown = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
-            </svg>
-        );
-
-        const BarChart3 = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 3v18h18"/>
-                <path d="M18 17V9"/>
-                <path d="M13 17V5"/>
-                <path d="M8 17v-3"/>
-            </svg>
-        );
-
-        const Dumbbell = ({size = 24, className = ""}) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m6.5 6.5 11 11"/>
-                <path d="m21 21-1-1"/>
-                <path d="m3 3 1 1"/>
-                <path d="m18 22 4-4"/>
-                <path d="m2 6 4-4"/>
-                <path d="m3 10 7-7"/>
-                <path d="m14 21 7-7"/>
-            </svg>
-        );
+        // --- ICON COMPONENT HELPER ---
+        // Since we are in a browser CDN, we use this to render Lucide icons
+        const Icon = ({ name, size = 24, className = "", fill = "none" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
 
         function MomentumForge() {
             const [dailyData, setDailyData] = useState({});
-            const [currentMonth, setCurrentMonth] = useState(0);
+            const [currentMonth, setCurrentMonth] = useState(0); // Jan
             const [currentYear, setCurrentYear] = useState(2026);
             const [showModal, setShowModal] = useState(false);
             const [modalData, setModalData] = useState(null);
             const [showRewards, setShowRewards] = useState(false);
+            
             const [isStudyMode, setIsStudyMode] = useState(false);
             const [timeLeft, setTimeLeft] = useState(25 * 60);
             const [timerActive, setTimerActive] = useState(false);
@@ -145,6 +66,18 @@
                 { days: 100, name: 'Immortal', emoji: '👑', color: 'from-yellow-300 to-yellow-600', points: 500, unlock: 'Hall of Fame Entry' },
             ];
 
+            // --- PERSISTENCE ---
+            useEffect(() => {
+                const saved = localStorage.getItem('momentum_forge_save_2026');
+                if (saved) setDailyData(JSON.parse(saved));
+            }, []);
+
+            const updateLocal = (newData) => {
+                setDailyData(newData);
+                localStorage.setItem('momentum_forge_save_2026', JSON.stringify(newData));
+            };
+
+            // --- TIMER ---
             useEffect(() => {
                 if (timerActive && timeLeft > 0) {
                     timerRef.current = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
@@ -160,94 +93,32 @@
                 return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
-            useEffect(() => {
-                const saved = localStorage.getItem('consistency_data');
-                if (saved) setDailyData(JSON.parse(saved));
-            }, []);
-
-            const saveData = (newData) => {
-                setDailyData(newData);
-                localStorage.setItem('consistency_data', JSON.stringify(newData));
-            };
-
-            const getDateKey = (date) => {
-                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            };
-
-            const openModal = (dateKey, day) => {
-                setModalData({ dateKey, day, data: dailyData[dateKey] || {} });
-                setShowModal(true);
-            };
-
-            const updateDayData = (field, value) => {
-                const newData = { ...dailyData };
-                if (!newData[modalData.dateKey]) newData[modalData.dateKey] = {};
-                newData[modalData.dateKey][field] = value;
-                saveData(newData);
-                setModalData(prev => ({ ...prev, data: newData[modalData.dateKey] }));
-            };
+            const getDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
             const updateProblemCount = (difficulty, value) => {
-                const countField = `dsa_${difficulty.toLowerCase()}_count`;
-                const boolField = `dsa_${difficulty.toLowerCase()}`;
                 const count = Math.max(0, parseInt(value) || 0);
                 const newData = { ...dailyData };
                 if (!newData[modalData.dateKey]) newData[modalData.dateKey] = {};
-                newData[modalData.dateKey][countField] = count;
-                newData[modalData.dateKey][boolField] = count > 0;
-                saveData(newData);
+                newData[modalData.dateKey][`dsa_${difficulty.toLowerCase()}_count`] = count;
+                newData[modalData.dateKey][`dsa_${difficulty.toLowerCase()}`] = count > 0;
+                updateLocal(newData);
                 setModalData(prev => ({ ...prev, data: newData[modalData.dateKey] }));
             };
 
             const calculateStreaks = () => {
                 const today = new Date();
                 let streakCount = 0;
-                const checkActive = (dayData) => {
-                    return dayData?.design || 
-                           (dayData?.dsa_easy || dayData?.dsa_medium || dayData?.dsa_hard) || 
-                           (dayData?.cardio || dayData?.pushup || dayData?.gym || dayData?.swimming || dayData?.badminton);
-                };
+                const checkActive = (dayData) => dayData?.design || (dayData?.dsa_easy || dayData?.dsa_medium || dayData?.dsa_hard) || (dayData?.gym || dayData?.cardio || dayData?.pushup);
 
                 for (let i = 1; i < 365; i++) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() - i);
-                    const key = getDateKey(d);
-                    if (checkActive(dailyData[key])) {
-                        streakCount++;
-                    } else {
-                        break;
-                    }
+                    const d = new Date(today); d.setDate(today.getDate() - i);
+                    if (checkActive(dailyData[getDateKey(d)])) streakCount++; else break;
                 }
-                if (checkActive(dailyData[getDateKey(today)])) {
-                    streakCount++;
-                }
+                if (checkActive(dailyData[getDateKey(today)])) streakCount++;
                 return streakCount;
             };
 
             const streak = calculateStreaks();
-
-            const graphStats = (() => {
-                const dataArray = Object.values(dailyData);
-                const designDays = dataArray.filter(d => d.design).length;
-                const dsaDays = dataArray.filter(d => d.dsa_easy || d.dsa_medium || d.dsa_hard).length;
-                const activeDays = dataArray.filter(d => d.design || d.dsa_easy || d.dsa_medium || d.dsa_hard || d.gym || d.cardio || d.pushup).length;
-                return [
-                    { label: 'Active Days', count: activeDays, color: 'rgb(249, 115, 22)' },
-                    { label: 'DSA Practice', count: dsaDays, color: 'rgb(59, 130, 246)' },
-                    { label: 'System Design', count: designDays, color: 'rgb(168, 85, 247)' },
-                ];
-            })();
-
-            const problems = (() => {
-                let easy = 0, medium = 0, hard = 0;
-                Object.values(dailyData).forEach(day => {
-                    easy += day.dsa_easy_count || 0;
-                    medium += day.dsa_medium_count || 0;
-                    hard += day.dsa_hard_count || 0;
-                });
-                return { easy, medium, hard, total: easy + medium + hard };
-            })();
-
             const currentMilestone = [...MILESTONES].reverse().find(m => streak >= m.days) || MILESTONES[0];
             const nextMilestone = MILESTONES.find(m => streak < m.days);
             const totalPoints = MILESTONES.reduce((acc, m) => streak >= m.days ? acc + m.points : acc, 0);
@@ -257,165 +128,113 @@
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 p-6 text-white font-sans text-left">
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 p-4 md:p-6 text-white selection:bg-orange-500">
+                    
+                    {/* ZEN TIMER OVERLAY */}
                     {isStudyMode && (
-                        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center">
-                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/40 hover:text-white transition">
-                                <X size={40}/>
-                            </button>
+                        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center animate-in">
+                            <button onClick={() => setIsStudyMode(false)} className="absolute top-10 right-10 text-white/40 hover:text-white transition"><Icon name="x" size={48}/></button>
                             <div className="text-center">
                                 <div className="text-xs font-black text-orange-500 tracking-[0.5em] mb-8 uppercase animate-pulse">Deep Work Protocol</div>
-                                <h2 className="text-[12rem] font-black tracking-tighter tabular-nums mb-12">{formatTime(timeLeft)}</h2>
+                                <h2 className="text-[10rem] md:text-[14rem] font-black tracking-tighter tabular-nums mb-12">{formatTime(timeLeft)}</h2>
                                 <div className="flex gap-8 justify-center">
                                     <button onClick={() => setTimerActive(!timerActive)} className={`w-24 h-24 rounded-full flex items-center justify-center transition ${timerActive ? 'bg-white/10 text-white' : 'bg-white text-black'}`}>
-                                        {timerActive ? <Pause size={40} /> : <Play size={40} className="ml-2" />}
+                                        <Icon name={timerActive ? "pause" : "play"} size={40} className={timerActive ? "" : "ml-2"} />
                                     </button>
-                                    <button onClick={() => {setTimerActive(false); setTimeLeft(25*60)}} className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition">
-                                        <RotateCcw size={32} />
-                                    </button>
+                                    <button onClick={() => {setTimerActive(false); setTimeLeft(25*60)}} className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white"><Icon name="rotate-ccw" size={32}/></button>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     <div className="max-w-7xl mx-auto">
-                        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-4">
+                        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20">
+                            
+                            {/* HEADER */}
+                            <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+                                <div className="flex items-center gap-5 text-left w-full md:w-auto">
                                     <div className={`bg-gradient-to-br ${currentMilestone.color} p-4 rounded-2xl shadow-lg animate-pulse`}>
                                         <span className="text-5xl">{currentMilestone.emoji}</span>
                                     </div>
                                     <div>
-                                        <h1 className="text-5xl font-black text-white drop-shadow-lg tracking-tight uppercase italic">Consistency</h1>
-                                        <p className="text-purple-200 text-sm font-medium">Any win counts. Maintain the chain.</p>
+                                        <h1 className="text-4xl md:text-5xl font-black text-white drop-shadow-lg tracking-tight uppercase italic">Momentum Forge</h1>
+                                        <p className="text-purple-200 text-sm font-medium">Aag lgade • 2026 Protocol</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3 items-center">
-                                    <div className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl flex items-center gap-2 shadow-lg backdrop-blur-md">
-                                        <Flame size={20} className="text-orange-500" />
-                                        <span className="font-black text-xl italic tabular-nums">{streak}</span>
+                                <div className="flex gap-3 items-center w-full md:w-auto justify-center">
+                                    <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-xl flex items-center gap-3 shadow-lg">
+                                        <Icon name="flame" className="text-orange-500" size={24}/>
+                                        <span className="font-black text-2xl italic tabular-nums">{streak}</span>
                                     </div>
-                                    <button onClick={() => setIsStudyMode(true)} className="bg-white text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-orange-500 hover:text-white transition shadow-lg">
-                                        <Monitor size={20} /> Zen Mode
+                                    <button onClick={() => setIsStudyMode(true)} className="bg-white text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-orange-500 hover:text-white transition uppercase italic">
+                                        <Icon name="monitor" size={18} /> Zen
                                     </button>
-                                    <button onClick={() => setShowRewards(true)} className="bg-gradient-to-r from-yellow-500 to-orange-500 px-6 py-3 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg">
-                                        <Trophy size={20} /> Rewards
+                                    <button onClick={() => setShowRewards(true)} className="bg-white/10 px-6 py-3 rounded-xl text-white font-bold flex items-center gap-2 hover:bg-white/20 transition uppercase italic">
+                                        <Icon name="trophy" size={18} /> Roadmap
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-left">
-                                <div className={`bg-gradient-to-br ${currentMilestone.color} rounded-2xl p-6 border-2 border-white/40 shadow-xl relative overflow-hidden`}>
+                            {/* STATS HUD */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                                <div className={`bg-gradient-to-br ${currentMilestone.color} rounded-[2rem] p-8 border-2 border-white/40 shadow-xl relative overflow-hidden text-left`}>
                                     <div className="relative z-10">
-                                        <div className="text-white/90 text-sm mb-1 flex items-center gap-2 uppercase font-black tracking-widest">
-                                            <Crown size={16}/> Rank Status
-                                        </div>
+                                        <div className="text-white/90 text-[10px] font-black uppercase tracking-widest mb-1">Current Rank</div>
                                         <div className="text-5xl font-black text-white mb-2 tracking-tighter uppercase italic">{currentMilestone.name}</div>
                                         <div className="text-white/90 text-sm font-semibold italic">{currentMilestone.unlock}</div>
                                     </div>
-                                    <div className="text-8xl opacity-20 absolute -right-4 top-0">{currentMilestone.emoji}</div>
+                                    <div className="text-[12rem] opacity-10 absolute -right-6 -top-4 select-none">{currentMilestone.emoji}</div>
                                 </div>
-
-                                <div className="space-y-4">
-                                    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 flex justify-between items-center">
-                                        <div>
-                                            <div className="flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-xs">
-                                                <Flame className="text-orange-500" size={16} /> Perfect Streak
-                                            </div>
-                                            <div className="text-purple-200 text-sm italic">Current daily chain</div>
-                                        </div>
-                                        <div className="text-4xl font-black text-white italic tabular-nums">{streak}</div>
+                                <div className="bg-white/5 rounded-[2rem] p-8 border border-white/10 flex justify-between items-center text-left">
+                                    <div>
+                                        <div className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Knowledge XP</div>
+                                        <div className="text-7xl font-black italic tabular-nums text-white">{totalPoints}</div>
                                     </div>
-                                    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 flex justify-between items-center">
-                                        <div>
-                                            <div className="flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-xs">
-                                                <Star className="text-yellow-400" size={16} /> Power Points
-                                            </div>
-                                            <div className="text-blue-200 text-sm italic">Total XP earned</div>
-                                        </div>
-                                        <div className="text-4xl font-black text-white italic tabular-nums">{totalPoints}</div>
-                                    </div>
+                                    <Icon name="star" className="text-yellow-400 opacity-20" size={80}/>
                                 </div>
                             </div>
 
-                            <div className="bg-black/20 rounded-3xl p-8 mb-6 border border-white/10 text-left relative overflow-hidden">
-                                <h3 className="text-white/40 font-black uppercase text-[11px] tracking-[0.3em] mb-8 flex items-center gap-3">
-                                    <BarChart3 size={14} /> Neural Analytics (Volume)
-                                </h3>
-                                <div className="space-y-8">
-                                    {graphStats.map((stat, idx) => {
-                                        const max = Math.max(...graphStats.map(s => s.count)) || 1;
-                                        const width = (stat.count / max) * 100;
-                                        return (
-                                            <div key={idx} className="relative group">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <div className="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-white/70">
-                                                        {stat.label}
-                                                    </div>
-                                                    <div className="text-xl font-black italic" style={{ color: stat.color }}>{stat.count}</div>
-                                                </div>
-                                                <div className="h-4 w-full bg-white/[0.03] rounded-full border border-white/5 overflow-hidden">
-                                                    <div className="h-full transition-all duration-1000 ease-out" style={{ width: `${width}%`, backgroundColor: stat.color }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
+                            {/* PROGRESS */}
                             {nextMilestone && (
-                                <div className="bg-white/5 rounded-2xl p-6 mb-6 border border-white/10 italic">
-                                    <div className="flex justify-between items-end mb-4">
+                                <div className="bg-white/5 rounded-[2rem] p-8 mb-8 border border-white/10 text-left">
+                                    <div className="flex justify-between items-end mb-4 italic">
                                         <div className="text-xl font-black uppercase tracking-tighter">Road to {nextMilestone.name}</div>
-                                        <div className="text-sm font-bold text-white/40 uppercase tracking-widest tabular-nums">{streak} / {nextMilestone.days} DAYS</div>
+                                        <div className="text-sm font-bold text-white/40 tabular-nums">{streak} / {nextMilestone.days} DAYS</div>
                                     </div>
                                     <div className="w-full bg-white/10 rounded-full h-4 overflow-hidden p-0.5">
-                                        <div 
-                                            className={`h-full rounded-full bg-gradient-to-r ${nextMilestone.color} transition-all duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.2)]`} 
-                                            style={{ width: `${Math.min(100, (streak / nextMilestone.days) * 100)}%` }} 
-                                        />
+                                        <div className={`h-full rounded-full bg-gradient-to-r ${nextMilestone.color} transition-all duration-1000`} style={{ width: `${Math.min(100, (streak / nextMilestone.days) * 100)}%` }} />
                                     </div>
                                 </div>
                             )}
 
-                            <div className="bg-white/5 rounded-2xl p-5 mb-6 border border-white/10">
-                                <h3 className="text-white font-bold mb-3 flex items-center gap-2 text-xs uppercase tracking-widest opacity-50">
-                                    <Zap size={18} className="text-blue-400"/> DSA Summary
-                                </h3>
-                                <div className="grid grid-cols-4 gap-3 text-center">
-                                    {['Easy', 'Medium', 'Hard', 'Total'].map((level) => (
-                                        <div key={level} className={`${level === 'Total' ? 'bg-blue-500/20' : level === 'Easy' ? 'bg-green-500/20' : level === 'Medium' ? 'bg-yellow-500/20' : 'bg-red-500/20'} p-3 rounded-xl border border-white/10 font-black italic`}>
-                                            <div className="text-[10px] uppercase not-italic opacity-50">{level}</div>
-                                            <div className="text-3xl">{problems[level.toLowerCase()] || problems.total}</div>
-                                        </div>
-                                    ))}
-                                </div>
+                            {/* CALENDAR CONTROLS */}
+                            <div className="flex items-center justify-between mb-8">
+                                <button onClick={() => { if(currentMonth === 0){setCurrentMonth(11); setCurrentYear(currentYear-1)} else setCurrentMonth(currentMonth-1)}} className="p-3 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                                    <Icon name="chevron-left" />
+                                </button>
+                                <div className="text-3xl font-black uppercase italic tracking-tighter">{monthNames[currentMonth]} {currentYear}</div>
+                                <button onClick={() => { if(currentMonth === 11){setCurrentMonth(0); setCurrentYear(currentYear+1)} else setCurrentMonth(currentMonth+1)}} className="p-3 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition">
+                                    <Icon name="chevron-right" />
+                                </button>
                             </div>
 
-                            <div className="flex items-center justify-between mb-6">
-                                <button onClick={() => {
-                                    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
-                                    else setCurrentMonth(currentMonth - 1);
-                                }} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition">←</button>
-                                <div className="text-2xl font-black uppercase italic tracking-tighter">{monthNames[currentMonth]} {currentYear}</div>
-                                <button onClick={() => {
-                                    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
-                                    else setCurrentMonth(currentMonth + 1);
-                                }} className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition">→</button>
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-3">
+                            {/* CALENDAR GRID */}
+                            <div className="grid grid-cols-7 gap-4">
                                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => <div key={d} className="text-center text-[10px] font-black text-white/20 p-2 tracking-widest">{d}</div>)}
-                                {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
+                                {Array.from({ length: firstDay }).map((_, i) => <div key={i} />)}
                                 {Array.from({ length: daysInMonth }).map((_, i) => {
                                     const d = i + 1;
                                     const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                                     const dayData = dailyData[dateKey];
                                     const isPerfect = dayData?.design || (dayData?.dsa_easy || dayData?.dsa_medium || dayData?.dsa_hard) || (dayData?.gym || dayData?.cardio || dayData?.pushup);
                                     return (
-                                        <button key={d} onClick={() => openModal(dateKey, d)} className={`aspect-square rounded-2xl border-2 transition-all hover:scale-110 flex flex-col items-center justify-center relative shadow-lg ${isPerfect ? 'bg-orange-500/20 border-orange-500 shadow-orange-500/10' : 'bg-white/[0.02] border-transparent hover:border-white/20'}`}>
-                                            <span className="absolute top-2 right-2 text-[10px] text-white/20 font-black">{d}</span>
-                                            {isPerfect ? <Flame size={28} className="text-orange-500" fill="currentColor" /> : <div className="w-1.5 h-1.5 rounded-full bg-white/5" />}
+                                        <button 
+                                            key={d} 
+                                            onClick={() => { setModalData({ dateKey, day: d, data: dayData || {} }); setShowModal(true); }}
+                                            className={`aspect-square rounded-[1.5rem] border-2 transition-all hover:scale-110 flex flex-col items-center justify-center relative ${isPerfect ? 'bg-orange-500/20 border-orange-500 shadow-xl' : 'bg-white/[0.02] border-transparent hover:border-white/20'}`}
+                                        >
+                                            <span className="absolute top-2 right-3 text-[10px] text-white/20 font-black">{d}</span>
+                                            {isPerfect ? <Icon name="flame" className="text-orange-500" fill="currentColor" size={32} /> : <div className="w-1.5 h-1.5 rounded-full bg-white/5" />}
                                         </button>
                                     )
                                 })}
@@ -423,9 +242,105 @@
                         </div>
                     </div>
 
+                    {/* MODAL */}
                     {showModal && modalData && (
-                        <div className="fixed inset-0 bg-black/90 backdrop-blur-3xl flex items-center justify-center z-[110] p-4 text-left">
-                            <div className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] w-full max-w-lg shadow-3xl">
-                                <div className="flex justify-between items-center mb-8 uppercase italic font-black">
-                                    <h3 className="text-4xl italic tracking-tighter uppercase">Day {modalData.day}</h3>
-                                    <button onClick={() => setShowModal
+                        <div className="fixed inset-0 bg-black/90 backdrop-blur-3xl flex items-center justify-center z-[110] p-4 animate-in">
+                            <div className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] w-full max-w-xl shadow-3xl text-left">
+                                <div className="flex justify-between items-center mb-10">
+                                    <h3 className="text-4xl font-black italic tracking-tighter uppercase leading-none">Forge Log: {modalData.day}</h3>
+                                    <button onClick={() => setShowModal(false)} className="text-zinc-500 hover:text-white transition p-2 bg-white/5 rounded-full"><Icon name="x" size={32}/></button>
+                                </div>
+                                
+                                <div className="space-y-6 text-left">
+                                    <button 
+                                        onClick={() => {
+                                            const val = !modalData.data.design;
+                                            const newData = { ...dailyData, [modalData.dateKey]: { ...modalData.data, design: val } };
+                                            updateLocal(newData);
+                                            setModalData(prev => ({...prev, data: newData[modalData.dateKey]}));
+                                        }} 
+                                        className={`w-full p-6 rounded-[2rem] border-2 flex items-center gap-4 transition-all transform active:scale-95 ${modalData.data.design ? 'bg-purple-600/20 border-purple-500 text-white shadow-xl' : 'bg-white/5 border-transparent text-zinc-500'}`}
+                                    >
+                                        <Icon name={modalData.data.design ? "check-circle-2" : "circle"} size={28} className={modalData.data.design ? "text-purple-400" : ""}/>
+                                        <span className="font-black text-lg uppercase tracking-tight">System Design Practice</span>
+                                    </button>
+
+                                    <div className="bg-blue-500/5 p-8 rounded-[2.5rem] border border-blue-500/20">
+                                        <p className="text-blue-400 text-[10px] font-black uppercase mb-6 tracking-widest italic flex items-center gap-2"><Icon name="zap" size={14}/> DSA Protocol</p>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {['Easy', 'Medium', 'Hard'].map(diff => (
+                                                <div key={diff}>
+                                                    <label className="text-[10px] text-white/30 block mb-2 uppercase font-black ml-1">{diff}</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={modalData.data[`dsa_${diff.toLowerCase()}_count`] || ''} 
+                                                        onChange={(e) => updateProblemCount(diff, e.target.value)}
+                                                        placeholder="0"
+                                                        className="bg-black/40 w-full p-4 rounded-2xl border border-white/5 text-2xl font-black outline-none text-blue-500 text-center focus:border-blue-500 transition" 
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-green-500/5 p-8 rounded-[2.5rem] border border-green-500/20">
+                                        <p className="text-green-400 text-[10px] font-black uppercase mb-6 tracking-widest italic flex items-center gap-2"><Icon name="dumbbell" size={14}/> Bio-Forge</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['gym', 'cardio', 'pushup', 'swimming', 'badminton'].map(act => (
+                                                <button 
+                                                    key={act} 
+                                                    onClick={() => {
+                                                        const val = !modalData.data[act];
+                                                        const newData = { ...dailyData, [modalData.dateKey]: { ...modalData.data, [act]: val } };
+                                                        updateLocal(newData);
+                                                        setModalData(prev => ({...prev, data: newData[modalData.dateKey]}));
+                                                    }} 
+                                                    className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase transition-all transform active:scale-90 tracking-widest ${modalData.data[act] ? 'bg-green-500 text-white shadow-lg' : 'bg-black/40 text-white/30 border border-white/5'}`}
+                                                >
+                                                    {act}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setShowModal(false)} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase italic shadow-2xl hover:bg-orange-500 hover:text-white transition-all transform active:scale-95 text-xl tracking-tighter">Sync & Commit</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ROADMAP MODAL */}
+                    {showRewards && (
+                        <div className="fixed inset-0 bg-black/95 backdrop-blur-3xl flex items-center justify-center z-[120] p-4 animate-in">
+                            <div className="max-w-3xl w-full bg-slate-900 border border-white/10 rounded-[4rem] p-10 max-h-[85vh] overflow-y-auto no-scrollbar shadow-3xl text-left">
+                                <div className="flex justify-between items-center mb-12">
+                                    <h2 className="text-5xl font-black italic tracking-tighter uppercase flex items-center gap-4"><Icon name="trophy" size={40} className="text-yellow-400"/> Roadmap</h2>
+                                    <button onClick={() => setShowRewards(false)} className="p-4 bg-white/5 rounded-full text-zinc-500 hover:text-white transition"><Icon name="x" size={32}/></button>
+                                </div>
+                                <div className="space-y-6">
+                                    {MILESTONES.map((m, i) => (
+                                        <div key={i} className={`p-10 rounded-[3rem] border-2 flex flex-col md:flex-row items-center justify-between gap-6 transition-all ${streak >= m.days ? `bg-gradient-to-r ${m.color} border-white/20 shadow-2xl scale-[1.02]` : 'bg-white/5 border-white/5 opacity-30'}`}>
+                                            <div className="flex items-center gap-8">
+                                                <span className="text-8xl drop-shadow-lg">{m.emoji}</span>
+                                                <div>
+                                                    <div className="font-black text-3xl uppercase italic tracking-tighter">{m.name}</div>
+                                                    <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 mt-1">{m.days} Day Chain Required</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-bold uppercase tracking-widest text-white/50">{m.unlock}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MomentumForge />);
+    </script>
+</body>
+</html>
